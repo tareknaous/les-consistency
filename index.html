@@ -1,0 +1,144 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta http-equiv="Cache-Control" content="no-cache">
+<title>Simulator Consistency Annotation</title>
+<link rel="stylesheet" href="style.css?v=1">
+<script src="https://cdn.jsdelivr.net/npm/marked@12.0.2/marked.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/dompurify@3.1.6/dist/purify.min.js"></script>
+<script src="config.js?v=1"></script>
+</head>
+<body>
+
+<!-- Login -->
+<section id="login" class="screen">
+  <div class="card narrow">
+    <h1>Simulator Consistency Annotation</h1>
+    <p class="muted">You will read 50 conversations between a user and an AI assistant. After the assistant's last
+      response, a <em>simulated user</em> wrote down its internal evaluation of that response and then wrote its next
+      message. For each item, judge whether the message is consistent with the evaluation.</p>
+    <label for="username" class="field-label">Your username</label>
+    <input id="username" type="text" autocomplete="username" placeholder="e.g. annotator1" spellcheck="false">
+    <p class="hint">Use the same username every time. Your progress is saved under it and you can stop and resume whenever you like.</p>
+    <button id="login-btn" class="primary wide">Start</button>
+    <p id="login-msg" class="hint"></p>
+  </div>
+</section>
+
+<!-- Annotation -->
+<section id="app" class="screen hidden">
+  <header class="topbar">
+    <div class="topbar-inner">
+      <div class="who"><span id="who-name"></span> <button id="logout-btn" class="link">switch user</button></div>
+      <div class="progress-wrap">
+        <div class="progress"><div id="progress-bar"></div></div>
+        <span id="progress-text"></span>
+      </div>
+      <div class="top-actions">
+        <span id="sync-status" class="sync"></span>
+        <button id="guide-btn" class="ghost">Guidelines</button>
+        <button id="export-btn" class="ghost">Export</button>
+      </div>
+    </div>
+  </header>
+
+  <main class="layout">
+    <div class="item-head">
+      <h2 id="item-title"></h2>
+      <div class="nav">
+        <button id="prev-btn" class="ghost">&larr; Previous</button>
+        <button id="jump-btn" class="ghost">Next unfinished</button>
+        <button id="next-btn" class="ghost">Next &rarr;</button>
+      </div>
+    </div>
+
+    <div id="earlier" class="earlier hidden">
+      <button id="earlier-btn" class="link"></button>
+      <div id="earlier-turns" class="hidden"></div>
+    </div>
+
+    <div class="turn user-turn">
+      <div class="role">User</div>
+      <div id="last-user" class="content plain"></div>
+    </div>
+    <div class="turn assistant-turn">
+      <div class="role">Assistant <span class="role-note">&mdash; the response being evaluated</span></div>
+      <div id="last-assistant" class="content md"></div>
+    </div>
+
+    <div class="les-card">
+      <div class="role">Simulated user's internal evaluation <span class="role-note">&mdash; private, not sent to the assistant</span></div>
+      <dl class="les-grid">
+        <dt>Thought</dt><dd id="les-thought"></dd>
+        <dt>Instruction followed</dt><dd id="les-if"></dd>
+        <dt>Rating</dt><dd id="les-rating"></dd>
+        <dt>Planned reaction</dt><dd id="les-reaction"></dd>
+        <dt>Feedback</dt><dd id="les-feedback"></dd>
+      </dl>
+    </div>
+    <div class="turn reply-turn">
+      <div class="role">Simulated user's next message <span class="role-note">&mdash; what it actually wrote</span></div>
+      <div id="reply" class="content plain"></div>
+    </div>
+
+    <form id="step1" class="card questions" autocomplete="off">
+      <fieldset>
+        <legend>Is the simulated user's next message consistent with its internal evaluation?</legend>
+        <div class="choices stacked" data-name="consistency">
+          <label><input type="radio" name="consistency" value="Yes"><span><b>Yes</b> &mdash; the message follows from the evaluation (its tone, content, and reaction match what the evaluation says)</span></label>
+          <label><input type="radio" name="consistency" value="Partially"><span><b>Partially</b> &mdash; broadly in line, but some part of the evaluation is not reflected or is contradicted</span></label>
+          <label><input type="radio" name="consistency" value="No"><span><b>No</b> &mdash; the message contradicts the evaluation or has nothing to do with it</span></label>
+        </div>
+      </fieldset>
+      <fieldset>
+        <legend>Comment <span class="muted">(optional)</span></legend>
+        <textarea id="note" placeholder="e.g. what does not match"></textarea>
+      </fieldset>
+      <div class="form-foot">
+        <span id="step1-msg" class="hint"></span>
+        <button type="submit" class="primary">Save and go to next</button>
+      </div>
+    </form>
+
+    <div id="all-done" class="card done hidden">
+      <h3>All 50 items are done &mdash; thank you!</h3>
+      <p id="done-text"></p>
+      <button id="export-btn-2" class="primary">Download my answers</button>
+    </div>
+  </main>
+</section>
+
+<!-- Guidelines -->
+<dialog id="guide">
+  <div class="guide-body">
+    <h2>Guidelines</h2>
+    <p>Each item shows a conversation between a user and an AI assistant. The last user turns are written by a
+      <b>simulated user</b> (a language model playing the user). Before writing each message, the simulator writes a
+      private <b>internal evaluation</b> of the assistant's last response: a short thought, whether the assistant
+      followed instructions, a 1&ndash;5 rating, the kind of reaction it plans (Neutral / Critique / Praise), and an
+      optional short feedback note.</p>
+    <p>Your only job: decide whether the <b>message the simulator then wrote</b> is consistent with <b>its own
+      evaluation</b>. You are <em>not</em> judging whether the evaluation is correct, or whether the assistant's response was good.</p>
+    <h3>What to check</h3>
+    <ul>
+      <li><b>Thought</b> &mdash; if the thought says something is wrong or missing, does the message act on it (point it out, ask again, correct it)? If the thought says the user is moving on, does the message move on?</li>
+      <li><b>Rating</b> &mdash; a low rating should come with dissatisfaction (pushback, corrections, re-asking, confusion); a high rating with satisfaction or simply moving on.</li>
+      <li><b>Planned reaction</b> &mdash; Critique = explicit pushback or correction; Praise = explicit thanks or satisfaction; Neutral = a follow-up, topic shift, or moving on with no explicit critique or praise.</li>
+    </ul>
+    <h3>Labels</h3>
+    <ul>
+      <li><b>Yes</b> &mdash; the message follows naturally from the evaluation.</li>
+      <li><b>Partially</b> &mdash; broadly in line, but a part of the evaluation is ignored or slightly contradicted (e.g. the thought names a specific problem the message never mentions; planned Praise but the message is neutral).</li>
+      <li><b>No</b> &mdash; the message contradicts the evaluation (e.g. rating 1 and a complaint in the thought, but the message thanks the assistant) or is unrelated to it.</li>
+    </ul>
+    <p class="muted">A neutral message can still be consistent with a low rating: real users often just re-ask or rephrase without complaining. Judge whether the message is a plausible thing for a user with <em>this</em> evaluation to write.</p>
+    <p class="muted">Conversations come from a public benchmark and can be long; the earlier turns are collapsed and usually not needed.</p>
+    <div class="form-foot"><button id="guide-close" class="primary">Got it</button></div>
+  </div>
+</dialog>
+
+<script src="app.js?v=1"></script>
+</body>
+</html>
