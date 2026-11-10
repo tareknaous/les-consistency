@@ -1,12 +1,13 @@
 (() => {
   "use strict";
 
-  const STORE_PREFIX = "turing:v2:";
+  const STORE_PREFIX = "turing:v3:";
   const URL_LIST = new URLSearchParams(location.search).get("list");
   const SYNC_URL = (window.SYNC_URL || "").trim();
   const $ = (id) => document.getElementById(id);
 
-  let items = [];          // from data.json
+  let items = [];
+  let NSIM = 1;            // simulators per context (rotation size)          // from data.json
   let byId = {};
   let user = null;
   let state = null;        // { order: [ids], answers: {id: {...}}, pos: int }
@@ -90,9 +91,9 @@
   }
 
   // Candidate keys shown as [A, B] for this annotator's list: the human ("h") and
-  // the simulator assigned to this context in this list ("s" + (c + list) % 2).
+  // the simulator assigned to this context in this list ("s" + (c + list) % NSIM).
   function sides(it) {
-    const sim = "s" + ((it.c + state.list) % 2);
+    const sim = "s" + ((it.c + state.list) % NSIM);
     return it.human_left[String(state.list)] ? ["h", sim] : [sim, "h"];
   }
   const isDone = (id) => !!(state.answers[id] && state.answers[id].step1_at);
@@ -160,7 +161,7 @@
     user = u;
     try { localStorage.setItem(STORE_PREFIX + "last", u); } catch (e) {}
     state = loadLocal(u) || { order: shuffled(items.map((x) => x.id), hash(u)), answers: {}, pos: 0 };
-    if (state.list === undefined) state.list = (URL_LIST !== null && /^[01]$/.test(URL_LIST)) ? Number(URL_LIST) : hash(u) % 2;
+    if (state.list === undefined) state.list = (URL_LIST !== null && /^[0-9]$/.test(URL_LIST)) ? Number(URL_LIST) % NSIM : hash(u) % NSIM;
     // Items added later (should not happen) go to the end of the order.
     for (const x of items) if (!state.order.includes(x.id)) state.order.push(x.id);
     state.order = state.order.filter((id) => byId[id]);
@@ -211,8 +212,8 @@
   $("export-btn").addEventListener("click", exportAnswers);
   $("export-btn-2").addEventListener("click", exportAnswers);
 
-  fetch("data.json?v=2").then((r) => r.json()).then((data) => {
-    items = data; byId = Object.fromEntries(items.map((x) => [x.id, x]));
+  fetch("data.json?v=3").then((r) => r.json()).then((data) => {
+    items = data; NSIM = Object.keys(items[0].cands).filter((k) => k[0] === "s").length; byId = Object.fromEntries(items.map((x) => [x.id, x]));
     try { const last = localStorage.getItem(STORE_PREFIX + "last"); if (last) $("username").value = last; } catch (e) {}
   }).catch(() => { $("login-msg").textContent = "Could not load the items. Please open this page through its web address, not as a local file."; $("login-btn").disabled = true; });
 })();
