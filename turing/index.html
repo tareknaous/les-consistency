@@ -1,0 +1,131 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta http-equiv="Cache-Control" content="no-cache">
+<title>Spot the Real User</title>
+<link rel="stylesheet" href="style.css?v=1">
+<script src="https://cdn.jsdelivr.net/npm/marked@12.0.2/marked.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/dompurify@3.1.6/dist/purify.min.js"></script>
+<script src="config.js?v=1"></script>
+</head>
+<body>
+
+<section id="login" class="screen">
+  <div class="card narrow">
+    <h1>Spot the Real User</h1>
+    <p class="muted">You will read 60 conversations between a person and an AI assistant. Each one stops after an
+      assistant response and shows two possible next messages from the user. <b>One was written by the real person,
+      the other by an AI pretending to be the user.</b> Pick the one you think the real person wrote.</p>
+    <label for="username" class="field-label">Your username</label>
+    <input id="username" type="text" autocomplete="username" placeholder="e.g. annotator1" spellcheck="false">
+    <p class="hint">Use the same username every time. Your progress is saved under it and you can stop and resume whenever you like.</p>
+    <button id="login-btn" class="primary wide">Start</button>
+    <p id="login-msg" class="hint"></p>
+  </div>
+</section>
+
+<section id="app" class="screen hidden">
+  <header class="topbar">
+    <div class="topbar-inner">
+      <div class="who"><span id="who-name"></span> <button id="logout-btn" class="link">switch user</button></div>
+      <div class="progress-wrap">
+        <div class="progress"><div id="progress-bar"></div></div>
+        <span id="progress-text"></span>
+      </div>
+      <div class="top-actions">
+        <span id="sync-status" class="sync"></span>
+        <button id="guide-btn" class="ghost">Guidelines</button>
+        <button id="export-btn" class="ghost">Export</button>
+      </div>
+    </div>
+  </header>
+
+  <main class="layout">
+    <div class="item-head">
+      <h2 id="item-title"></h2>
+      <div class="nav">
+        <button id="prev-btn" class="ghost">&larr; Previous</button>
+        <button id="jump-btn" class="ghost">Next unfinished</button>
+        <button id="next-btn" class="ghost">Next &rarr;</button>
+      </div>
+    </div>
+
+    <div id="earlier" class="earlier hidden">
+      <button id="earlier-btn" class="link"></button>
+      <div id="earlier-turns" class="hidden"></div>
+    </div>
+
+    <div class="turn user-turn">
+      <div class="role">User</div>
+      <div id="last-user" class="content plain"></div>
+    </div>
+    <div class="turn assistant-turn">
+      <div class="role">Assistant</div>
+      <div id="last-assistant" class="content md"></div>
+    </div>
+
+    <div class="section-label">Possible next messages from the user</div>
+    <div class="cands">
+      <div class="cand"><div class="role">Message A</div><div id="cand-a" class="content"></div></div>
+      <div class="cand"><div class="role">Message B</div><div id="cand-b" class="content"></div></div>
+    </div>
+
+    <form id="step1" class="card questions" autocomplete="off">
+      <fieldset>
+        <legend>Which message was written by the real person?</legend>
+        <div class="choices" data-name="choice">
+          <label><input type="radio" name="choice" value="A"><span><b>Message A</b></span></label>
+          <label><input type="radio" name="choice" value="B"><span><b>Message B</b></span></label>
+        </div>
+      </fieldset>
+      <fieldset>
+        <legend>How sure are you?</legend>
+        <div class="choices" data-name="confidence">
+          <label><input type="radio" name="confidence" value="guess"><span>Mostly guessing</span></label>
+          <label><input type="radio" name="confidence" value="somewhat"><span>Somewhat sure</span></label>
+          <label><input type="radio" name="confidence" value="sure"><span>Very sure</span></label>
+        </div>
+      </fieldset>
+      <fieldset>
+        <legend>What gave it away? <span class="muted">(optional)</span></legend>
+        <textarea id="note" placeholder="e.g. too polished, too long, repeats the assistant, odd tone"></textarea>
+      </fieldset>
+      <div class="form-foot">
+        <span id="step1-msg" class="hint"></span>
+        <button type="submit" class="primary">Save and go to next</button>
+      </div>
+    </form>
+
+    <div id="all-done" class="card done hidden">
+      <h3>All items are done &mdash; thank you!</h3>
+      <p id="done-text"></p>
+      <button id="export-btn-2" class="primary">Download my answers</button>
+    </div>
+  </main>
+</section>
+
+<dialog id="guide">
+  <div class="guide-body">
+    <h2>Guidelines</h2>
+    <p>Each item is a real conversation between a person and an AI assistant, cut off right after an assistant
+      response. Below it are two candidate next messages from the user:</p>
+    <ul>
+      <li>one is what the <b>real person</b> actually wrote next;</li>
+      <li>the other was written by an <b>AI system imitating the user</b>, given the same conversation.</li>
+    </ul>
+    <p>Pick the message you think the real person wrote, and say how sure you are. The real message is on the left
+      or the right at random.</p>
+    <p class="muted">There is no trick: exactly one of the two is real in every item. Judge how a real person in this
+      conversation would plausibly write (length, tone, typos, what they focus on, whether they move on or push back).
+      You do not need to check whether the assistant's answer is correct.</p>
+    <p class="muted">Earlier turns are collapsed; open them if you need more context. Personal details in the
+      conversations were anonymised.</p>
+    <div class="form-foot"><button id="guide-close" class="primary">Got it</button></div>
+  </div>
+</dialog>
+
+<script src="app.js?v=1"></script>
+</body>
+</html>

@@ -1,0 +1,1 @@
+window.SYNC_URL = "";
