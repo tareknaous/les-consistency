@@ -5,7 +5,7 @@
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <meta http-equiv="Cache-Control" content="no-cache">
 <title>Spot the Real User</title>
-<link rel="stylesheet" href="style.css?v=1">
+<link rel="stylesheet" href="style.css?v=2">
 <script src="https://cdn.jsdelivr.net/npm/marked@12.0.2/marked.min.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/dompurify@3.1.6/dist/purify.min.js"></script>
 <script src="config.js?v=1"></script>
@@ -80,18 +80,6 @@
           <label><input type="radio" name="choice" value="B"><span><b>Message B</b></span></label>
         </div>
       </fieldset>
-      <fieldset>
-        <legend>How sure are you?</legend>
-        <div class="choices" data-name="confidence">
-          <label><input type="radio" name="confidence" value="guess"><span>Mostly guessing</span></label>
-          <label><input type="radio" name="confidence" value="somewhat"><span>Somewhat sure</span></label>
-          <label><input type="radio" name="confidence" value="sure"><span>Very sure</span></label>
-        </div>
-      </fieldset>
-      <fieldset>
-        <legend>What gave it away? <span class="muted">(optional)</span></legend>
-        <textarea id="note" placeholder="e.g. too polished, too long, repeats the assistant, odd tone"></textarea>
-      </fieldset>
       <div class="form-foot">
         <span id="step1-msg" class="hint"></span>
         <button type="submit" class="primary">Save and go to next</button>
@@ -115,7 +103,7 @@
       <li>one is what the <b>real person</b> actually wrote next;</li>
       <li>the other was written by an <b>AI system imitating the user</b>, given the same conversation.</li>
     </ul>
-    <p>Pick the message you think the real person wrote, and say how sure you are. The real message is on the left
+    <p>Pick the message you think the real person wrote. The real message is on the left
       or the right at random.</p>
     <p class="muted">There is no trick: exactly one of the two is real in every item. Judge how a real person in this
       conversation would plausibly write (length, tone, typos, what they focus on, whether they move on or push back).
@@ -126,6 +114,6 @@
   </div>
 </dialog>
 
-<script src="app.js?v=1"></script>
+<script src="app.js?v=2"></script>
 </body>
 </html>

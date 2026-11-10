@@ -1,7 +1,7 @@
 (() => {
   "use strict";
 
-  const STORE_PREFIX = "turing:v1:";
+  const STORE_PREFIX = "turing:v2:";
   const URL_LIST = new URLSearchParams(location.search).get("list");
   const SYNC_URL = (window.SYNC_URL || "").trim();
   const $ = (id) => document.getElementById(id);
@@ -90,9 +90,9 @@
   }
 
   // Candidate keys shown as [A, B] for this annotator's list: the human ("h") and
-  // the simulator assigned to this context in this list ("s" + (c + list) % 3).
+  // the simulator assigned to this context in this list ("s" + (c + list) % 2).
   function sides(it) {
-    const sim = "s" + ((it.c + state.list) % 3);
+    const sim = "s" + ((it.c + state.list) % 2);
     return it.human_left[String(state.list)] ? ["h", sim] : [sim, "h"];
   }
   const isDone = (id) => !!(state.answers[id] && state.answers[id].step1_at);
@@ -136,8 +136,6 @@
     const s1 = $("step1");
     $("step1-msg").textContent = "";
     setRadios(s1, "choice", ans.choice);
-    setRadios(s1, "confidence", ans.confidence);
-    $("note").value = ans.note || "";
     const allDone = updateProgress() === state.order.length;
     $("all-done").classList.toggle("hidden", !allDone);
     if (allDone) $("done-text").textContent = SYNC_URL
@@ -162,7 +160,7 @@
     user = u;
     try { localStorage.setItem(STORE_PREFIX + "last", u); } catch (e) {}
     state = loadLocal(u) || { order: shuffled(items.map((x) => x.id), hash(u)), answers: {}, pos: 0 };
-    if (state.list === undefined) state.list = (URL_LIST !== null && /^[012]$/.test(URL_LIST)) ? Number(URL_LIST) : hash(u) % 3;
+    if (state.list === undefined) state.list = (URL_LIST !== null && /^[01]$/.test(URL_LIST)) ? Number(URL_LIST) : hash(u) % 2;
     // Items added later (should not happen) go to the end of the order.
     for (const x of items) if (!state.order.includes(x.id)) state.order.push(x.id);
     state.order = state.order.filter((id) => byId[id]);
@@ -181,9 +179,8 @@
   $("step1").addEventListener("submit", (e) => {
     e.preventDefault();
     const f = e.target;
-    const v = { choice: getRadio(f, "choice"), confidence: getRadio(f, "confidence"), note: $("note").value.trim() };
+    const v = { choice: getRadio(f, "choice") };
     if (!v.choice) { $("step1-msg").textContent = "Please choose Message A or Message B."; return; }
-    if (!v.confidence) { $("step1-msg").textContent = "Please say how sure you are."; return; }
     const id = state.order[state.pos];
     const [a, b] = sides(byId[id]);
     v.cand = v.choice === "A" ? a : b; v.list = state.list;
@@ -214,7 +211,7 @@
   $("export-btn").addEventListener("click", exportAnswers);
   $("export-btn-2").addEventListener("click", exportAnswers);
 
-  fetch("data.json?v=1").then((r) => r.json()).then((data) => {
+  fetch("data.json?v=2").then((r) => r.json()).then((data) => {
     items = data; byId = Object.fromEntries(items.map((x) => [x.id, x]));
     try { const last = localStorage.getItem(STORE_PREFIX + "last"); if (last) $("username").value = last; } catch (e) {}
   }).catch(() => { $("login-msg").textContent = "Could not load the items. Please open this page through its web address, not as a local file."; $("login-btn").disabled = true; });
