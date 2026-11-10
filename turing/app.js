@@ -1,7 +1,7 @@
 (() => {
   "use strict";
 
-  const STORE_PREFIX = "turing:v3:";
+  const STORE_PREFIX = "turing:v4:";
   const URL_LIST = new URLSearchParams(location.search).get("list");
   const SYNC_URL = (window.SYNC_URL || "").trim();
   const $ = (id) => document.getElementById(id);
@@ -212,7 +212,7 @@
   $("export-btn").addEventListener("click", exportAnswers);
   $("export-btn-2").addEventListener("click", exportAnswers);
 
-  fetch("data.json?v=3").then((r) => r.json()).then((data) => {
+  fetch("data.json?v=4").then((r) => r.json()).then((data) => {
     items = data; NSIM = Object.keys(items[0].cands).filter((k) => k[0] === "s").length; byId = Object.fromEntries(items.map((x) => [x.id, x]));
     try { const last = localStorage.getItem(STORE_PREFIX + "last"); if (last) $("username").value = last; } catch (e) {}
   }).catch(() => { $("login-msg").textContent = "Could not load the items. Please open this page through its web address, not as a local file."; $("login-btn").disabled = true; });
